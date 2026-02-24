@@ -910,19 +910,71 @@ function clearAllData() {
 function handleImage(e) {
   const file = e.target.files?.[0];
   if (!file) return;
-  const reader = new FileReader();
-  reader.onload = (ev) => {
-    state.currentImage = ev.target.result;
-    state.processStartTime = Date.now();
-    showScreen('processing');
-    
-    // Show preview
+  
+  state.processStartTime = Date.now();
+  showScreen('processing');
+  document.getElementById('processing-step').textContent = 'Preparing image...';
+  
+  // Compress image to stay under Claude's 5MB limit
+  compressImage(file, 4.5 * 1024 * 1024).then(dataUrl => {
+    state.currentImage = dataUrl;
     const preview = document.getElementById('processing-preview');
     preview.innerHTML = `<img src="${state.currentImage}" alt="Order">`;
-    
     processOrder();
-  };
-  reader.readAsDataURL(file);
+  }).catch(err => {
+    alert('Error processing image: ' + err.message);
+    showScreen('home');
+  });
+}
+
+function compressImage(file, maxBytes) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const img = new Image();
+      img.onload = () => {
+        // Start with original size, scale down if needed
+        let quality = 0.85;
+        let maxDim = 2400; // Max dimension in pixels
+        
+        function tryCompress() {
+          const canvas = document.createElement('canvas');
+          let w = img.width, h = img.height;
+          
+          // Scale down if larger than maxDim
+          if (w > maxDim || h > maxDim) {
+            if (w > h) { h = Math.round(h * maxDim / w); w = maxDim; }
+            else { w = Math.round(w * maxDim / h); h = maxDim; }
+          }
+          
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, w, h);
+          
+          const dataUrl = canvas.toDataURL('image/jpeg', quality);
+          
+          // Check size (base64 is ~33% larger than binary)
+          const base64 = dataUrl.split(',')[1];
+          const bytes = base64.length * 0.75;
+          
+          if (bytes > maxBytes && quality > 0.3) {
+            // Try again with lower quality or smaller size
+            quality -= 0.15;
+            if (quality < 0.5) maxDim = Math.round(maxDim * 0.75);
+            tryCompress();
+          } else {
+            resolve(dataUrl);
+          }
+        }
+        tryCompress();
+      };
+      img.onerror = () => reject(new Error('Could not load image'));
+      img.src = ev.target.result;
+    };
+    reader.onerror = () => reject(new Error('Could not read file'));
+    reader.readAsDataURL(file);
+  });
 }
 
 // ═══════════ PROCESS ORDER ═══════════
