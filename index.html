@@ -44,6 +44,7 @@
   --font: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --nav-height: 68px;
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -54,8 +55,45 @@ html, body {
 }
 
 /* ─── SCREEN MANAGEMENT ─── */
-.screen { display: none; min-height: 100vh; min-height: 100dvh; flex-direction: column; }
+.screen { display: none; min-height: 100vh; min-height: 100dvh; flex-direction: column; padding-bottom: calc(var(--nav-height) + var(--safe-bottom) + 8px); }
 .screen.active { display: flex; }
+.screen.no-nav { padding-bottom: 0; }
+
+/* ─── BOTTOM NAV ─── */
+.bottom-nav {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 200;
+  background: var(--card);
+  border-top: 1px solid var(--border);
+  padding: 6px 8px calc(var(--safe-bottom) + 6px);
+  display: flex; justify-content: space-around; align-items: center;
+}
+.nav-item {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: 6px 12px; border-radius: var(--radius-sm); cursor: pointer;
+  transition: all 0.15s; border: none; background: none;
+  min-width: 56px; position: relative;
+}
+.nav-item:active { transform: scale(0.92); }
+.nav-icon { font-size: 22px; line-height: 1; }
+.nav-label { font-size: 10px; font-weight: 600; color: var(--text-muted); }
+.nav-item.active .nav-label { color: var(--primary); font-weight: 700; }
+.nav-item.active::after {
+  content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+  width: 24px; height: 3px; border-radius: 2px; background: var(--primary);
+}
+.nav-item.scan-btn .nav-icon {
+  width: 44px; height: 44px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; color: white; box-shadow: 0 4px 16px rgba(27,122,158,0.35);
+  margin-top: -12px;
+}
+.nav-badge {
+  position: absolute; top: 2px; right: 8px; min-width: 16px; height: 16px;
+  border-radius: 8px; background: var(--accent); color: white;
+  font-size: 9px; font-weight: 800; display: flex; align-items: center;
+  justify-content: center; padding: 0 4px;
+}
 
 /* ─── TOP BAR ─── */
 .topbar {
@@ -72,6 +110,18 @@ html, body {
 }
 .topbar-title { font-size: 19px; font-weight: 700; letter-spacing: -0.3px; flex: 1; }
 .topbar-subtitle { font-size: 12px; color: var(--text-sec); margin-top: 2px; }
+.topbar-action {
+  padding: 7px 14px; border-radius: var(--radius-full); font-size: 12px;
+  font-weight: 700; border: none; cursor: pointer; font-family: var(--font);
+}
+
+/* ─── OFFLINE INDICATOR ─── */
+.offline-bar {
+  padding: 6px 16px; background: var(--danger); color: white;
+  text-align: center; font-size: 11px; font-weight: 700;
+  display: none; align-items: center; justify-content: center; gap: 6px;
+}
+.offline-bar.show { display: flex; }
 
 /* ─── HOME SCREEN ─── */
 .home-header {
@@ -113,22 +163,142 @@ html, body {
 .mode-bar.demo .mode-dot { background: var(--warning); }
 @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
 
-/* ─── RESIDENT SELECTOR ─── */
-.resident-section { padding: 16px 20px 8px; }
+/* ─── PENDING ORDERS ALERT ─── */
+.pending-alert {
+  margin: 12px 20px 0; padding: 12px 14px; border-radius: var(--radius);
+  background: var(--accent-soft); border: 1px solid rgba(229,107,62,0.2);
+  display: flex; align-items: center; gap: 10px; cursor: pointer;
+  transition: all 0.15s;
+}
+.pending-alert:active { transform: scale(0.98); }
+.pending-alert-icon { font-size: 20px; }
+.pending-alert-text { flex: 1; }
+.pending-alert-title { font-size: 13px; font-weight: 700; color: var(--accent); }
+.pending-alert-sub { font-size: 11px; color: var(--accent); opacity: 0.8; }
+.pending-alert-arrow { font-size: 16px; color: var(--accent); }
+
+/* ─── QUICK ACTIONS ─── */
+.quick-actions { padding: 16px 20px 8px; }
+.quick-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+.quick-card {
+  padding: 16px; border-radius: var(--radius); background: var(--card);
+  border: 1.5px solid var(--border); cursor: pointer; transition: all 0.15s;
+  box-shadow: var(--shadow-sm); display: flex; flex-direction: column; gap: 8px;
+}
+.quick-card:active { transform: scale(0.97); background: var(--card-hover); }
+.quick-icon { font-size: 28px; }
+.quick-label { font-size: 14px; font-weight: 700; }
+.quick-desc { font-size: 11px; color: var(--text-sec); line-height: 1.4; }
+
+/* ─── SECTION LABEL ─── */
 .section-label {
   font-size: 11px; font-weight: 700; color: var(--text-muted);
   text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 10px;
 }
-.resident-chips { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
-.resident-chips::-webkit-scrollbar { display: none; }
-.resident-chip {
-  padding: 8px 16px; border-radius: var(--radius-full); font-size: 13px; font-weight: 600;
-  white-space: nowrap; cursor: pointer; border: 1.5px solid var(--border);
-  background: var(--card); color: var(--text); transition: all 0.15s;
+.section-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 16px 20px 8px;
 }
-.resident-chip.active {
-  background: var(--primary); color: white; border-color: var(--primary);
+.section-link { font-size: 12px; font-weight: 700; color: var(--primary); cursor: pointer; }
+
+/* ─── RECENT ACTIVITY (HOME) ─── */
+.recent-section { padding: 0 20px 16px; }
+.recent-card {
+  padding: 12px 14px; background: var(--card); border-radius: var(--radius);
+  border: 1px solid var(--border); box-shadow: var(--shadow-sm); margin-bottom: 8px;
+  display: flex; align-items: center; gap: 12px;
 }
+.recent-avatar {
+  width: 40px; height: 40px; border-radius: 50%; display: flex;
+  align-items: center; justify-content: center; font-size: 16px;
+  font-weight: 800; color: white; flex-shrink: 0;
+}
+.recent-info { flex: 1; min-width: 0; }
+.recent-name { font-size: 13px; font-weight: 700; }
+.recent-detail { font-size: 11px; color: var(--text-sec); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.recent-meta { font-size: 10px; color: var(--text-muted); text-align: right; white-space: nowrap; }
+
+/* ─── RESIDENTS SCREEN ─── */
+.residents-scroll { flex: 1; overflow-y: auto; padding: 12px 16px; }
+.resident-card {
+  padding: 14px; margin-bottom: 10px; background: var(--card);
+  border-radius: var(--radius); border: 1.5px solid var(--border);
+  box-shadow: var(--shadow-sm); cursor: pointer; transition: all 0.15s;
+}
+.resident-card:active { transform: scale(0.98); }
+.rc-top { display: flex; align-items: center; gap: 12px; }
+.rc-avatar {
+  width: 48px; height: 48px; border-radius: 50%; display: flex;
+  align-items: center; justify-content: center; font-size: 18px;
+  font-weight: 800; color: white; flex-shrink: 0;
+}
+.rc-info { flex: 1; }
+.rc-name { font-size: 16px; font-weight: 700; }
+.rc-detail { font-size: 12px; color: var(--text-sec); margin-top: 2px; }
+.rc-badges { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+.rc-badge {
+  font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: var(--radius-full);
+}
+.rc-badge.meds { background: var(--primary-soft); color: var(--primary); }
+.rc-badge.pending { background: var(--accent-soft); color: var(--accent); }
+.rc-badge.allergy { background: var(--danger-soft); color: var(--danger); }
+.rc-arrow { font-size: 18px; color: var(--text-muted); }
+
+/* ─── RESIDENT PROFILE SCREEN ─── */
+.profile-header {
+  padding: 20px; text-align: center; background: var(--card);
+  border-bottom: 1px solid var(--border);
+}
+.profile-avatar {
+  width: 72px; height: 72px; border-radius: 50%; margin: 0 auto 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 28px; font-weight: 800; color: white;
+}
+.profile-name { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
+.profile-sub { font-size: 13px; color: var(--text-sec); margin-top: 4px; }
+.profile-allergy-bar {
+  margin: 12px auto 0; padding: 6px 16px; border-radius: var(--radius-full);
+  background: var(--danger-soft); border: 1px solid rgba(192,57,43,0.25);
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 12px; font-weight: 700; color: var(--danger);
+}
+.profile-scroll { flex: 1; overflow-y: auto; padding: 12px 16px; }
+.profile-section {
+  padding: 14px; margin-bottom: 10px; background: var(--card);
+  border-radius: var(--radius); border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+}
+.ps-title {
+  font-size: 11px; font-weight: 700; color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px;
+}
+.ps-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--border-light); }
+.ps-row:last-child { border-bottom: none; }
+.ps-label { font-size: 12px; color: var(--text-sec); }
+.ps-value { font-size: 12px; font-weight: 600; text-align: right; max-width: 60%; }
+
+/* ─── ACTIVE MEDS LIST ─── */
+.med-list-card {
+  padding: 12px; margin-bottom: 8px; border-radius: var(--radius-sm);
+  border: 1px solid var(--border); background: var(--card);
+}
+.ml-top { display: flex; justify-content: space-between; align-items: flex-start; }
+.ml-name { font-size: 14px; font-weight: 700; }
+.ml-dose { font-size: 12px; color: var(--text-sec); margin-top: 2px; }
+.ml-status {
+  font-size: 9px; font-weight: 800; padding: 3px 8px; border-radius: var(--radius-full);
+  white-space: nowrap;
+}
+.ml-status.active { background: var(--success-soft); color: var(--success); }
+.ml-status.pending { background: var(--accent-soft); color: var(--accent); }
+.ml-freq { font-size: 11px; color: var(--text-muted); margin-top: 6px; }
+.ml-confirm-btn {
+  margin-top: 8px; padding: 8px; border-radius: var(--radius-sm);
+  background: var(--accent); color: white; border: none; cursor: pointer;
+  font-family: var(--font); font-size: 12px; font-weight: 700; width: 100%;
+  transition: all 0.15s;
+}
+.ml-confirm-btn:active { transform: scale(0.97); }
 
 /* ─── CAPTURE AREA ─── */
 .capture-section { padding: 8px 20px 20px; flex: 1; display: flex; flex-direction: column; gap: 12px; }
@@ -156,6 +326,20 @@ html, body {
 }
 .capture-upload:active { background: var(--bg); }
 
+/* ─── SAMPLE ORDERS ─── */
+.sample-section { padding: 0 20px 12px; }
+.sample-strip { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
+.sample-strip::-webkit-scrollbar { display: none; }
+.sample-card {
+  min-width: 120px; padding: 10px; border-radius: var(--radius-sm);
+  background: var(--card); border: 1.5px solid var(--border);
+  cursor: pointer; transition: all 0.15s; text-align: center;
+  flex-shrink: 0;
+}
+.sample-card:active { transform: scale(0.95); border-color: var(--primary); }
+.sample-icon { font-size: 24px; margin-bottom: 4px; }
+.sample-label { font-size: 11px; font-weight: 700; color: var(--text-sec); }
+
 .info-box {
   padding: 12px 14px; border-radius: var(--radius); display: flex;
   align-items: flex-start; gap: 10px; font-size: 12px; line-height: 1.5;
@@ -166,24 +350,18 @@ html, body {
 .info-box.danger { background: var(--danger-soft); color: var(--danger); border: 1px solid rgba(192,57,43,0.2); }
 .info-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
 
-/* ─── BOTTOM ACTIONS ─── */
-.bottom-actions { padding: 0 20px 20px; display: flex; flex-direction: column; gap: 10px; }
-.bottom-actions { padding-bottom: calc(var(--safe-bottom) + 20px); }
-
-.btn-link {
-  padding: 12px; border-radius: var(--radius); background: var(--primary-soft);
-  border: 1px solid rgba(27,122,158,0.15); text-align: center; cursor: pointer;
-  font-size: 13px; font-weight: 600; color: var(--primary);
+/* ─── RESIDENT SELECTOR (SCAN SCREEN) ─── */
+.resident-section { padding: 16px 20px 8px; }
+.resident-chips { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
+.resident-chips::-webkit-scrollbar { display: none; }
+.resident-chip {
+  padding: 8px 16px; border-radius: var(--radius-full); font-size: 13px; font-weight: 600;
+  white-space: nowrap; cursor: pointer; border: 1.5px solid var(--border);
+  background: var(--card); color: var(--text); transition: all 0.15s;
 }
-.btn-row { display: flex; gap: 10px; }
-.btn-row > * { flex: 1; }
-.btn-icon-label {
-  padding: 12px; border-radius: var(--radius); background: var(--card);
-  border: 1.5px solid var(--border); display: flex; flex-direction: column;
-  align-items: center; gap: 6px; cursor: pointer; font-size: 12px;
-  font-weight: 600; color: var(--text-sec);
+.resident-chip.active {
+  background: var(--primary); color: white; border-color: var(--primary);
 }
-.btn-icon-label .bi { font-size: 20px; }
 
 /* ─── PROCESSING SCREEN ─── */
 .processing-center {
@@ -220,9 +398,10 @@ html, body {
   align-items: center; gap: 10px; margin-bottom: 12px;
 }
 .result-banner.success { background: var(--success-soft); border: 1px solid rgba(29,163,98,0.2); }
+.result-banner.warning { background: var(--warning-soft); border: 1px solid rgba(200,139,10,0.2); }
 .result-banner .rb-icon { font-size: 18px; }
-.result-banner .rb-text { font-size: 13px; font-weight: 700; color: var(--success); }
-.result-banner .rb-sub { font-size: 11px; color: var(--success); opacity: 0.8; }
+.result-banner .rb-text { font-size: 13px; font-weight: 700; }
+.result-banner .rb-sub { font-size: 11px; opacity: 0.8; }
 
 .result-preview {
   height: 72px; border-radius: var(--radius-sm); overflow: hidden;
@@ -259,6 +438,16 @@ html, body {
   display: flex; align-items: center; gap: 4px;
 }
 
+/* Duplicate warning */
+.dup-warning {
+  padding: 10px 14px; border-radius: var(--radius); margin-bottom: 12px;
+  background: var(--warning-soft); border: 1px solid rgba(200,139,10,0.25);
+  display: flex; align-items: flex-start; gap: 10px;
+}
+.dup-warning-icon { font-size: 20px; flex-shrink: 0; }
+.dup-warning-text { font-size: 12px; color: var(--warning); line-height: 1.5; }
+.dup-warning-title { font-weight: 700; margin-bottom: 2px; }
+
 /* Edit mode */
 .edit-row { display: flex; gap: 8px; margin-top: 8px; }
 .edit-input {
@@ -282,6 +471,7 @@ html, body {
   position: fixed; bottom: 0; left: 0; right: 0; max-width: 100%;
   padding: 12px 16px calc(var(--safe-bottom) + 16px);
   background: linear-gradient(transparent, var(--bg) 20%);
+  z-index: 150;
 }
 .confirm-stats { font-size: 11px; color: var(--text-muted); text-align: center; margin-bottom: 8px; }
 .btn-confirm {
@@ -354,6 +544,12 @@ html, body {
 .hc-accuracy-bar { flex: 1; height: 4px; background: var(--border-light); border-radius: 2px; overflow: hidden; }
 .hc-accuracy-fill { height: 100%; border-radius: 2px; }
 .hc-accuracy-text { font-size: 11px; font-weight: 700; min-width: 32px; text-align: right; }
+
+.export-btn {
+  margin: 8px 0; padding: 12px; border-radius: var(--radius); background: var(--primary-soft);
+  border: 1px solid rgba(27,122,158,0.15); text-align: center; cursor: pointer;
+  font-size: 13px; font-weight: 600; color: var(--primary);
+}
 
 /* ─── SETTINGS SCREEN ─── */
 .settings-scroll { flex: 1; overflow-y: auto; padding: 16px; }
@@ -432,9 +628,31 @@ input[type="file"] { display: none; }
   background: #FFFAF5;
   border-color: rgba(200, 139, 10, 0.3);
 }
+
+/* ─── EMPTY STATE ─── */
+.empty-state {
+  text-align: center; padding: 40px 32px; color: var(--text-muted);
+}
+.empty-icon { font-size: 48px; margin-bottom: 12px; }
+.empty-title { font-size: 16px; font-weight: 700; color: var(--text-sec); margin-bottom: 4px; }
+.empty-text { font-size: 13px; line-height: 1.5; }
+
+/* ─── TOAST ─── */
+.toast {
+  position: fixed; bottom: calc(var(--nav-height) + var(--safe-bottom) + 20px);
+  left: 50%; transform: translateX(-50%) translateY(100px);
+  padding: 12px 24px; border-radius: var(--radius-full);
+  background: var(--text); color: white; font-size: 13px; font-weight: 600;
+  box-shadow: var(--shadow-lg); z-index: 300; transition: transform 0.3s ease;
+  white-space: nowrap;
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
 </style>
 </head>
 <body>
+
+<!-- ─── OFFLINE INDICATOR ─── -->
+<div class="offline-bar" id="offline-bar">📵 Offline — orders will sync when connected</div>
 
 <!-- ═══════════ HOME SCREEN ═══════════ -->
 <div id="screen-home" class="screen active">
@@ -442,10 +660,10 @@ input[type="file"] { display: none; }
     <div class="home-logo">
       <div class="home-logo-icon">💊</div>
       <div class="home-logo-text">CareOS AI</div>
-      <div class="home-logo-badge">v0.1 Demo</div>
+      <div class="home-logo-badge">v0.2 Demo</div>
     </div>
-    <div style="font-size:13px;opacity:0.7;margin-bottom:4px;">AI Doctor Order Reader</div>
-    <div style="font-size:11px;opacity:0.5;">Photograph → AI Extracts → You Confirm</div>
+    <div style="font-size:13px;opacity:0.7;margin-bottom:4px;">AI-Powered eMAR for Assisted Living</div>
+    <div style="font-size:11px;opacity:0.5;">Photograph → AI Extracts → You Confirm → eMAR Updated</div>
     <div class="home-stats">
       <div class="home-stat">
         <div class="home-stat-value" id="stat-processed">0</div>
@@ -456,8 +674,8 @@ input[type="file"] { display: none; }
         <div class="home-stat-label">Avg Accuracy</div>
       </div>
       <div class="home-stat">
-        <div class="home-stat-value" id="stat-edited">0</div>
-        <div class="home-stat-label">Fields Edited</div>
+        <div class="home-stat-value" id="stat-active-meds">0</div>
+        <div class="home-stat-label">Active Meds</div>
       </div>
     </div>
   </div>
@@ -466,6 +684,82 @@ input[type="file"] { display: none; }
   <div id="mode-indicator" class="mode-bar demo">
     <div class="mode-dot"></div>
     <span id="mode-text">Setup needed — add API key in Settings</span>
+  </div>
+
+  <!-- Pending orders alert -->
+  <div id="pending-alert" class="pending-alert hidden" onclick="navigateTo('residents')">
+    <span class="pending-alert-icon">📦</span>
+    <div class="pending-alert-text">
+      <div class="pending-alert-title" id="pending-alert-title">2 medications awaiting receipt</div>
+      <div class="pending-alert-sub">Tap to confirm physical delivery</div>
+    </div>
+    <span class="pending-alert-arrow">→</span>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="quick-actions">
+    <div class="section-label">Quick Actions</div>
+    <div class="quick-grid">
+      <div class="quick-card" onclick="navigateTo('scan')">
+        <span class="quick-icon">📸</span>
+        <span class="quick-label">Scan Order</span>
+        <span class="quick-desc">AI reads doctor's orders from photos</span>
+      </div>
+      <div class="quick-card" onclick="navigateTo('residents')">
+        <span class="quick-icon">👥</span>
+        <span class="quick-label">Residents</span>
+        <span class="quick-desc">Profiles, meds & allergies</span>
+      </div>
+      <div class="quick-card" onclick="navigateTo('history')">
+        <span class="quick-icon">🕐</span>
+        <span class="quick-label">History</span>
+        <span class="quick-desc">All processed orders</span>
+      </div>
+      <div class="quick-card" onclick="showScreen('guide')">
+        <span class="quick-icon">📋</span>
+        <span class="quick-label">Test Guide</span>
+        <span class="quick-desc">How to validate the AI</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Activity -->
+  <div class="section-header">
+    <div class="section-label" style="margin-bottom:0">Recent Activity</div>
+    <span class="section-link" onclick="navigateTo('history')">View All</span>
+  </div>
+  <div class="recent-section" id="recent-activity"></div>
+</div>
+
+<!-- ═══════════ RESIDENTS SCREEN ═══════════ -->
+<div id="screen-residents" class="screen">
+  <div class="topbar">
+    <div class="topbar-row">
+      <div class="topbar-title">Residents</div>
+    </div>
+  </div>
+  <div class="residents-scroll" id="residents-scroll"></div>
+</div>
+
+<!-- ═══════════ RESIDENT PROFILE SCREEN ═══════════ -->
+<div id="screen-profile" class="screen">
+  <div class="topbar">
+    <div class="topbar-row">
+      <button class="topbar-back" onclick="navigateTo('residents')">←</button>
+      <div class="topbar-title" id="profile-topbar-name">Resident</div>
+      <button class="topbar-action" style="background:var(--primary-soft);color:var(--primary);" onclick="scanForCurrentResident()">+ New Order</button>
+    </div>
+  </div>
+  <div id="profile-header-area"></div>
+  <div class="profile-scroll" id="profile-scroll"></div>
+</div>
+
+<!-- ═══════════ SCAN SCREEN ═══════════ -->
+<div id="screen-scan" class="screen">
+  <div class="topbar">
+    <div class="topbar-row">
+      <div class="topbar-title">Scan Doctor Order</div>
+    </div>
   </div>
 
   <!-- Resident selector -->
@@ -487,35 +781,23 @@ input[type="file"] { display: none; }
       <span>Upload from Files</span>
     </div>
 
+    <!-- Sample Orders -->
+    <div class="sample-section" style="padding:0;">
+      <div class="section-label">Try a sample order</div>
+      <div class="sample-strip" id="sample-strip"></div>
+    </div>
+
     <div class="info-box accent">
       <span class="info-icon">ℹ️</span>
       <div>
-        <strong>How it works:</strong> AI reads the photo and extracts medication name, dosage, route, frequency, prescriber, and instructions. You always review and confirm before anything is added.
-      </div>
-    </div>
-  </div>
-
-  <!-- Bottom -->
-  <div class="bottom-actions">
-    <div class="btn-row">
-      <div class="btn-icon-label" onclick="showScreen('history')">
-        <span class="bi">🕐</span>
-        <span>History</span>
-      </div>
-      <div class="btn-icon-label" onclick="showScreen('settings')">
-        <span class="bi">⚙️</span>
-        <span>Settings</span>
-      </div>
-      <div class="btn-icon-label" onclick="showScreen('guide')">
-        <span class="bi">📋</span>
-        <span>Test Guide</span>
+        <strong>How it works:</strong> AI reads the photo and extracts medication name, dosage, route, frequency, prescriber, and instructions. You always review and confirm.
       </div>
     </div>
   </div>
 </div>
 
 <!-- ═══════════ PROCESSING SCREEN ═══════════ -->
-<div id="screen-processing" class="screen">
+<div id="screen-processing" class="screen no-nav">
   <div class="processing-center">
     <div class="processing-preview" id="processing-preview"></div>
     <div class="spinner"></div>
@@ -531,10 +813,10 @@ input[type="file"] { display: none; }
 </div>
 
 <!-- ═══════════ RESULTS SCREEN ═══════════ -->
-<div id="screen-results" class="screen">
+<div id="screen-results" class="screen no-nav">
   <div class="topbar">
     <div class="topbar-row">
-      <button class="topbar-back" onclick="showScreen('home')">←</button>
+      <button class="topbar-back" onclick="navigateTo('scan')">←</button>
       <div>
         <div class="topbar-title">Review Extraction</div>
         <div class="topbar-subtitle" id="results-subtitle"></div>
@@ -550,7 +832,7 @@ input[type="file"] { display: none; }
 </div>
 
 <!-- ═══════════ CONFIRMED SCREEN ═══════════ -->
-<div id="screen-confirmed" class="screen">
+<div id="screen-confirmed" class="screen no-nav">
   <div class="confirmed-center">
     <div class="confirmed-check">✓</div>
     <div class="confirmed-title">Order Confirmed</div>
@@ -558,8 +840,9 @@ input[type="file"] { display: none; }
     <div class="confirmed-resident" id="confirmed-resident"></div>
     <div class="confirmed-time-badge" id="confirmed-time"></div>
     <div class="confirmed-status">Status: PENDING — awaiting physical receipt</div>
-    <button class="btn-primary" onclick="resetAndHome()">Process Another Order</button>
-    <button class="btn-secondary" onclick="showScreen('history')">View History (<span id="confirmed-count">0</span>)</button>
+    <button class="btn-primary" onclick="resetAndGoScan()">Process Another Order</button>
+    <button class="btn-secondary" style="margin-bottom:10px;" onclick="viewResidentProfile(state.selectedResident)">View Resident Profile</button>
+    <button class="btn-secondary" onclick="navigateTo('history')">View History (<span id="confirmed-count">0</span>)</button>
   </div>
 </div>
 
@@ -567,7 +850,6 @@ input[type="file"] { display: none; }
 <div id="screen-history" class="screen">
   <div class="topbar">
     <div class="topbar-row">
-      <button class="topbar-back" onclick="showScreen('home')">←</button>
       <div class="topbar-title">Processing History</div>
     </div>
   </div>
@@ -578,7 +860,6 @@ input[type="file"] { display: none; }
 <div id="screen-settings" class="screen">
   <div class="topbar">
     <div class="topbar-row">
-      <button class="topbar-back" onclick="showScreen('home')">←</button>
       <div class="topbar-title">Settings</div>
     </div>
   </div>
@@ -630,6 +911,14 @@ input[type="file"] { display: none; }
         🗑️ Clear All Data
       </button>
     </div>
+
+    <div class="settings-card">
+      <div class="sc-title">Test Guide</div>
+      <div class="sc-desc" style="margin-bottom:10px;">Step-by-step instructions for validating the AI</div>
+      <button class="btn-secondary" onclick="showScreen('guide')" style="width:100%;font-size:13px;">
+        📋 Open Test Guide
+      </button>
+    </div>
   </div>
 </div>
 
@@ -637,7 +926,7 @@ input[type="file"] { display: none; }
 <div id="screen-guide" class="screen">
   <div class="topbar">
     <div class="topbar-row">
-      <button class="topbar-back" onclick="showScreen('home')">←</button>
+      <button class="topbar-back" onclick="navigateTo('settings')">←</button>
       <div class="topbar-title">Testing Guide</div>
     </div>
   </div>
@@ -647,7 +936,7 @@ input[type="file"] { display: none; }
         <div class="gs-num">1</div>
         <div>
           <div class="gs-title">Get Sample Doctor Orders</div>
-          <div class="gs-content">Search Google Images for "physician medication order form" or "doctor prescription order." You can also write fake orders by hand with messy handwriting — that's actually the best test. Or ask an AFH operator for blank order forms.</div>
+          <div class="gs-content">Search Google Images for "physician medication order form" or "doctor prescription order." You can also write fake orders by hand — that's the best test. Or try the built-in sample orders on the Scan screen.</div>
         </div>
       </div>
     </div>
@@ -694,9 +983,37 @@ input[type="file"] { display: none; }
   </div>
 </div>
 
+<!-- ═══════════ BOTTOM NAVIGATION ═══════════ -->
+<div class="bottom-nav" id="bottom-nav">
+  <button class="nav-item active" data-tab="home" onclick="navigateTo('home')">
+    <span class="nav-icon">🏠</span>
+    <span class="nav-label">Home</span>
+  </button>
+  <button class="nav-item" data-tab="residents" onclick="navigateTo('residents')">
+    <span class="nav-icon">👥</span>
+    <span class="nav-label">Residents</span>
+    <span class="nav-badge hidden" id="nav-pending-badge">0</span>
+  </button>
+  <button class="nav-item scan-btn" data-tab="scan" onclick="navigateTo('scan')">
+    <span class="nav-icon">📸</span>
+    <span class="nav-label">Scan</span>
+  </button>
+  <button class="nav-item" data-tab="history" onclick="navigateTo('history')">
+    <span class="nav-icon">🕐</span>
+    <span class="nav-label">History</span>
+  </button>
+  <button class="nav-item" data-tab="settings" onclick="navigateTo('settings')">
+    <span class="nav-icon">⚙️</span>
+    <span class="nav-label">Settings</span>
+  </button>
+</div>
+
 <!-- File inputs -->
 <input type="file" id="input-camera" accept="image/*" capture="environment">
 <input type="file" id="input-upload" accept="image/*,.pdf">
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
 
 <script>
 // ═══════════ STATE ═══════════
@@ -709,10 +1026,60 @@ let state = {
   currentResults: null,
   editingField: null,
   history: [],
+  medications: {}, // { residentName: [{ name, dosage, route, frequency, status, ... }] }
   processStartTime: null,
 };
 
-const RESIDENTS = ['Dorothy M.', 'Robert K.', 'Helen W.', 'James T.', 'Patricia L.'];
+// ═══════════ RESIDENT DATA ═══════════
+const RESIDENTS_DATA = {
+  'Dorothy M.': {
+    name: 'Dorothy M.', fullName: 'Dorothy Mae Henderson', dob: '03/14/1938', age: 87,
+    room: 'Room 1', admitted: '09/15/2024', color: '#1B7A9E',
+    physician: 'Dr. Sarah Chen', physicianPhone: '(206) 555-0142',
+    pharmacy: 'Omnicare LTC Pharmacy', pharmacyPhone: '(206) 555-0200',
+    emergencyContact: 'Linda Henderson (Daughter)', emergencyPhone: '(206) 555-0388',
+    insurance: 'Medicare + Medicaid', allergies: ['Penicillin', 'Sulfa drugs'],
+    diagnoses: ['Hypertension', 'Type 2 Diabetes', 'Osteoarthritis', 'Mild Cognitive Impairment'],
+  },
+  'Robert K.': {
+    name: 'Robert K.', fullName: 'Robert Kenneth Park', dob: '07/22/1941', age: 84,
+    room: 'Room 2', admitted: '01/08/2025', color: '#E56B3E',
+    physician: 'Dr. Michael Torres', physicianPhone: '(206) 555-0156',
+    pharmacy: 'PharMerica', pharmacyPhone: '(206) 555-0210',
+    emergencyContact: 'James Park (Son)', emergencyPhone: '(425) 555-0291',
+    insurance: 'Medicare Part D', allergies: ['Codeine'],
+    diagnoses: ['COPD', 'Atrial Fibrillation', 'GERD', 'Depression'],
+  },
+  'Helen W.': {
+    name: 'Helen W.', fullName: 'Helen Whitfield', dob: '11/30/1935', age: 90,
+    room: 'Room 3', admitted: '06/22/2024', color: '#1DA362',
+    physician: 'Dr. Sarah Chen', physicianPhone: '(206) 555-0142',
+    pharmacy: 'Omnicare LTC Pharmacy', pharmacyPhone: '(206) 555-0200',
+    emergencyContact: 'Susan Whitfield (Daughter)', emergencyPhone: '(253) 555-0145',
+    insurance: 'Medicare + Supplement Plan F', allergies: [],
+    diagnoses: ['Congestive Heart Failure', 'Osteoporosis', 'Hypothyroidism'],
+  },
+  'James T.': {
+    name: 'James T.', fullName: 'James Thomas Rivera', dob: '02/05/1945', age: 81,
+    room: 'Room 4', admitted: '11/01/2024', color: '#8B5CF6',
+    physician: 'Dr. Anil Patel', physicianPhone: '(206) 555-0178',
+    pharmacy: 'PharMerica', pharmacyPhone: '(206) 555-0210',
+    emergencyContact: 'Maria Rivera (Wife)', emergencyPhone: '(206) 555-0422',
+    insurance: 'VA Healthcare + Medicare', allergies: ['Aspirin', 'Ibuprofen'],
+    diagnoses: ['Parkinson\'s Disease', 'Hypertension', 'BPH', 'Insomnia'],
+  },
+  'Patricia L.': {
+    name: 'Patricia L.', fullName: 'Patricia Lynn Douglas', dob: '08/19/1940', age: 85,
+    room: 'Room 5', admitted: '03/10/2025', color: '#D946A8',
+    physician: 'Dr. Michael Torres', physicianPhone: '(206) 555-0156',
+    pharmacy: 'Omnicare LTC Pharmacy', pharmacyPhone: '(206) 555-0200',
+    emergencyContact: 'Tom Douglas (Son)', emergencyPhone: '(360) 555-0503',
+    insurance: 'Medicare + Medicaid', allergies: ['Latex'],
+    diagnoses: ['Alzheimer\'s Disease (moderate)', 'Anxiety Disorder', 'Urinary Incontinence'],
+  },
+};
+
+const RESIDENT_NAMES = Object.keys(RESIDENTS_DATA);
 
 const SYSTEM_PROMPT = `You are an expert medical prescription and doctor order extraction AI for an assisted living facility. You read handwritten, faxed, printed, and typed orders from photographs.
 
@@ -775,20 +1142,23 @@ OTHER: Rx=prescription | d/c/DC=discontinue | NKA=no known allergies | DAW=dispe
 
 // ═══════════ INIT ═══════════
 function init() {
-  // Load saved state
   try {
     const saved = JSON.parse(localStorage.getItem('careos_state') || '{}');
     if (saved.apiKey) state.apiKey = saved.apiKey;
     if (saved.useRealAPI) state.useRealAPI = saved.useRealAPI;
     if (saved.model) state.model = saved.model;
     if (saved.history) state.history = saved.history;
+    if (saved.medications) state.medications = saved.medications;
   } catch(e) {}
 
   renderResidentChips();
   updateModeIndicator();
   updateStats();
-  
-  // Settings
+  updatePendingAlert();
+  renderRecentActivity();
+  renderSampleOrders();
+
+  // Settings UI
   if (state.useRealAPI) {
     document.getElementById('toggle-api').classList.replace('off','on');
     document.getElementById('api-config').classList.remove('hidden');
@@ -805,40 +1175,69 @@ function init() {
   document.getElementById('input-camera').addEventListener('change', handleImage);
   document.getElementById('input-upload').addEventListener('change', handleImage);
   document.getElementById('model-select').addEventListener('change', (e) => { state.model = e.target.value; saveState(); });
+
+  // Offline detection
+  window.addEventListener('online', () => document.getElementById('offline-bar').classList.remove('show'));
+  window.addEventListener('offline', () => document.getElementById('offline-bar').classList.add('show'));
+  if (!navigator.onLine) document.getElementById('offline-bar').classList.add('show');
 }
 
 function saveState() {
   localStorage.setItem('careos_state', JSON.stringify({
-    apiKey: state.apiKey,
-    useRealAPI: state.useRealAPI,
-    model: state.model,
-    history: state.history,
+    apiKey: state.apiKey, useRealAPI: state.useRealAPI,
+    model: state.model, history: state.history, medications: state.medications,
   }));
 }
 
 // ═══════════ NAVIGATION ═══════════
+function navigateTo(tab) {
+  // Map tab to screen
+  const screenMap = { home: 'home', residents: 'residents', scan: 'scan', history: 'history', settings: 'settings' };
+  if (screenMap[tab]) {
+    showScreen(tab);
+    // Update nav
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    const navItem = document.querySelector(`.nav-item[data-tab="${tab}"]`);
+    if (navItem) navItem.classList.add('active');
+  }
+}
+
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById('screen-' + id).classList.add('active');
+  const screen = document.getElementById('screen-' + id);
+  screen.classList.add('active');
+
+  // Show/hide bottom nav
+  const nav = document.getElementById('bottom-nav');
+  nav.style.display = screen.classList.contains('no-nav') ? 'none' : 'flex';
+
   if (id === 'history') renderHistory();
-  if (id === 'home') { updateStats(); updateModeIndicator(); }
+  if (id === 'home') { updateStats(); updatePendingAlert(); renderRecentActivity(); }
+  if (id === 'residents') renderResidentsList();
   window.scrollTo(0, 0);
 }
 
-function resetAndHome() {
+function resetAndGoScan() {
   state.currentImage = null;
   state.currentResults = null;
   state.editingField = null;
-  // Reset file inputs
   document.getElementById('input-camera').value = '';
   document.getElementById('input-upload').value = '';
-  showScreen('home');
+  navigateTo('scan');
+}
+
+// ═══════════ TOAST ═══════════
+function showToast(msg, duration = 2500) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), duration);
 }
 
 // ═══════════ RESIDENTS ═══════════
 function renderResidentChips() {
   const container = document.getElementById('resident-chips');
-  container.innerHTML = RESIDENTS.map(name => 
+  container.innerHTML = RESIDENT_NAMES.map(name =>
     `<div class="resident-chip ${name === state.selectedResident ? 'active' : ''}" onclick="selectResident('${name}')">${name}</div>`
   ).join('');
 }
@@ -848,7 +1247,241 @@ function selectResident(name) {
   renderResidentChips();
 }
 
-// ═══════════ MODE ═══════════
+function renderResidentsList() {
+  const container = document.getElementById('residents-scroll');
+  container.innerHTML = RESIDENT_NAMES.map(name => {
+    const r = RESIDENTS_DATA[name];
+    const meds = state.medications[name] || [];
+    const activeMeds = meds.filter(m => m.status === 'active').length;
+    const pendingMeds = meds.filter(m => m.status === 'pending').length;
+    const hasAllergy = r.allergies.length > 0;
+
+    return `<div class="resident-card" onclick="viewResidentProfile('${name}')">
+      <div class="rc-top">
+        <div class="rc-avatar" style="background:${r.color}">${name.split(' ').map(n=>n[0]).join('')}</div>
+        <div class="rc-info">
+          <div class="rc-name">${r.fullName}</div>
+          <div class="rc-detail">${r.room} · Age ${r.age} · Dr. ${r.physician.replace('Dr. ','')}</div>
+          <div class="rc-badges">
+            ${activeMeds > 0 ? `<span class="rc-badge meds">💊 ${activeMeds} active meds</span>` : ''}
+            ${pendingMeds > 0 ? `<span class="rc-badge pending">📦 ${pendingMeds} pending</span>` : ''}
+            ${hasAllergy ? `<span class="rc-badge allergy">⚠️ Allergies</span>` : ''}
+            ${!activeMeds && !pendingMeds ? `<span class="rc-badge meds">No medications yet</span>` : ''}
+          </div>
+        </div>
+        <span class="rc-arrow">→</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ═══════════ RESIDENT PROFILE ═══════════
+function viewResidentProfile(name) {
+  const r = RESIDENTS_DATA[name];
+  if (!r) return;
+  state.selectedResident = name;
+
+  document.getElementById('profile-topbar-name').textContent = r.name;
+
+  // Header
+  const headerArea = document.getElementById('profile-header-area');
+  headerArea.innerHTML = `<div class="profile-header">
+    <div class="profile-avatar" style="background:${r.color}">${name.split(' ').map(n=>n[0]).join('')}</div>
+    <div class="profile-name">${r.fullName}</div>
+    <div class="profile-sub">${r.room} · Age ${r.age} · Admitted ${r.admitted}</div>
+    ${r.allergies.length > 0 ? `<div class="profile-allergy-bar">⚠️ ALLERGIES: ${r.allergies.join(', ')}</div>` : ''}
+  </div>`;
+
+  // Body
+  const scroll = document.getElementById('profile-scroll');
+  const meds = state.medications[name] || [];
+  const activeMeds = meds.filter(m => m.status === 'active');
+  const pendingMeds = meds.filter(m => m.status === 'pending');
+
+  let html = '';
+
+  // Pending meds (need receipt confirmation)
+  if (pendingMeds.length > 0) {
+    html += `<div class="profile-section" style="border-color:rgba(229,107,62,0.3);background:#FFFAF5;">
+      <div class="ps-title" style="color:var(--accent)">📦 Pending Receipt (${pendingMeds.length})</div>`;
+    pendingMeds.forEach((med, i) => {
+      const medIdx = meds.indexOf(med);
+      html += `<div class="med-list-card" style="border-color:rgba(229,107,62,0.2);">
+        <div class="ml-top">
+          <div>
+            <div class="ml-name">${med.name}</div>
+            <div class="ml-dose">${med.dosage || ''} ${med.route ? '· ' + med.route : ''}</div>
+          </div>
+          <span class="ml-status pending">PENDING</span>
+        </div>
+        <div class="ml-freq">${med.frequency || ''} ${med.prescriber ? '· ' + med.prescriber : ''}</div>
+        <button class="ml-confirm-btn" onclick="event.stopPropagation(); confirmReceipt('${name}', ${medIdx})">
+          ✓ Confirm Physical Receipt
+        </button>
+      </div>`;
+    });
+    html += `</div>`;
+  }
+
+  // Active meds
+  html += `<div class="profile-section">
+    <div class="ps-title">💊 Active Medications (${activeMeds.length})</div>`;
+  if (activeMeds.length === 0) {
+    html += `<div style="text-align:center;padding:16px;color:var(--text-muted);font-size:13px;">No active medications.<br>Scan a doctor's order to add one.</div>`;
+  } else {
+    activeMeds.forEach(med => {
+      html += `<div class="med-list-card">
+        <div class="ml-top">
+          <div>
+            <div class="ml-name">${med.name}</div>
+            <div class="ml-dose">${med.dosage || ''} ${med.route ? '· ' + med.route : ''}</div>
+          </div>
+          <span class="ml-status active">ACTIVE</span>
+        </div>
+        <div class="ml-freq">${med.frequency || ''} ${med.form ? '· ' + med.form : ''}</div>
+      </div>`;
+    });
+  }
+  html += `</div>`;
+
+  // Demographics
+  html += `<div class="profile-section">
+    <div class="ps-title">📋 Demographics</div>
+    <div class="ps-row"><span class="ps-label">Full Name</span><span class="ps-value">${r.fullName}</span></div>
+    <div class="ps-row"><span class="ps-label">Date of Birth</span><span class="ps-value">${r.dob}</span></div>
+    <div class="ps-row"><span class="ps-label">Age</span><span class="ps-value">${r.age}</span></div>
+    <div class="ps-row"><span class="ps-label">Room</span><span class="ps-value">${r.room}</span></div>
+    <div class="ps-row"><span class="ps-label">Admitted</span><span class="ps-value">${r.admitted}</span></div>
+    <div class="ps-row"><span class="ps-label">Insurance</span><span class="ps-value">${r.insurance}</span></div>
+  </div>`;
+
+  // Medical
+  html += `<div class="profile-section">
+    <div class="ps-title">🏥 Medical Info</div>
+    <div class="ps-row"><span class="ps-label">Physician</span><span class="ps-value">${r.physician}</span></div>
+    <div class="ps-row"><span class="ps-label">Physician Phone</span><span class="ps-value">${r.physicianPhone}</span></div>
+    <div class="ps-row"><span class="ps-label">Pharmacy</span><span class="ps-value">${r.pharmacy}</span></div>
+    <div class="ps-row"><span class="ps-label">Pharmacy Phone</span><span class="ps-value">${r.pharmacyPhone}</span></div>
+    <div class="ps-row"><span class="ps-label">Allergies</span><span class="ps-value" style="${r.allergies.length?'color:var(--danger);font-weight:700':''}">${r.allergies.length ? r.allergies.join(', ') : 'NKA (No Known Allergies)'}</span></div>
+    <div class="ps-row"><span class="ps-label">Diagnoses</span><span class="ps-value">${r.diagnoses.join(', ')}</span></div>
+  </div>`;
+
+  // Emergency
+  html += `<div class="profile-section">
+    <div class="ps-title">🚨 Emergency Contact</div>
+    <div class="ps-row"><span class="ps-label">Name</span><span class="ps-value">${r.emergencyContact}</span></div>
+    <div class="ps-row"><span class="ps-label">Phone</span><span class="ps-value">${r.emergencyPhone}</span></div>
+  </div>`;
+
+  scroll.innerHTML = html;
+  showScreen('profile');
+}
+
+function scanForCurrentResident() {
+  navigateTo('scan');
+  renderResidentChips();
+}
+
+// ═══════════ RECEIPT CONFIRMATION ═══════════
+function confirmReceipt(residentName, medIdx) {
+  const meds = state.medications[residentName];
+  if (!meds || !meds[medIdx]) return;
+
+  if (confirm(`Confirm physical receipt of ${meds[medIdx].name} for ${residentName}?\n\nThis will move the medication to ACTIVE status on the MAR.`)) {
+    meds[medIdx].status = 'active';
+    meds[medIdx].activatedAt = new Date().toISOString();
+    saveState();
+    showToast('✓ ' + meds[medIdx].name + ' is now ACTIVE');
+    viewResidentProfile(residentName);
+    updatePendingAlert();
+    updateNavBadge();
+  }
+}
+
+// ═══════════ PENDING ALERT ═══════════
+function updatePendingAlert() {
+  let totalPending = 0;
+  Object.values(state.medications).forEach(meds => {
+    totalPending += meds.filter(m => m.status === 'pending').length;
+  });
+  const alert = document.getElementById('pending-alert');
+  if (totalPending > 0) {
+    alert.classList.remove('hidden');
+    document.getElementById('pending-alert-title').textContent =
+      `${totalPending} medication${totalPending > 1 ? 's' : ''} awaiting receipt`;
+  } else {
+    alert.classList.add('hidden');
+  }
+  updateNavBadge();
+}
+
+function updateNavBadge() {
+  let totalPending = 0;
+  Object.values(state.medications).forEach(meds => {
+    totalPending += meds.filter(m => m.status === 'pending').length;
+  });
+  const badge = document.getElementById('nav-pending-badge');
+  if (totalPending > 0) {
+    badge.textContent = totalPending;
+    badge.classList.remove('hidden');
+  } else {
+    badge.classList.add('hidden');
+  }
+}
+
+// ═══════════ SAMPLE ORDERS ═══════════
+function renderSampleOrders() {
+  const samples = [
+    { icon: '📝', label: 'Handwritten Rx', desc: 'Messy handwriting test' },
+    { icon: '🖨️', label: 'Printed Order', desc: 'Clean typed order' },
+    { icon: '📠', label: 'Faxed Copy', desc: 'Low-quality fax' },
+    { icon: '💊💊', label: 'Multi-Med', desc: '3 medications' },
+  ];
+  document.getElementById('sample-strip').innerHTML = samples.map((s, i) =>
+    `<div class="sample-card" onclick="showToast('Upload a real image to test — samples coming in v0.3')">
+      <div class="sample-icon">${s.icon}</div>
+      <div class="sample-label">${s.label}</div>
+    </div>`
+  ).join('');
+}
+
+// ═══════════ RECENT ACTIVITY (HOME) ─══════════
+function renderRecentActivity() {
+  const container = document.getElementById('recent-activity');
+  if (state.history.length === 0) {
+    container.innerHTML = `<div style="text-align:center;padding:20px;color:var(--text-muted);font-size:13px;">
+      No activity yet. Scan your first doctor's order to get started.
+    </div>`;
+    return;
+  }
+  const recent = state.history.slice(0, 3);
+  container.innerHTML = recent.map(h => {
+    const r = RESIDENTS_DATA[h.resident];
+    const color = r ? r.color : '#8697AB';
+    const initials = h.resident.split(' ').map(n=>n[0]).join('');
+    const timeAgo = getTimeAgo(h.timestamp);
+    return `<div class="recent-card">
+      <div class="recent-avatar" style="background:${color}">${initials}</div>
+      <div class="recent-info">
+        <div class="recent-name">${h.medication}</div>
+        <div class="recent-detail">${h.resident} · ${h.medCount > 1 ? h.medCount + ' meds' : 'Confidence: ' + h.avgConfidence + '%'}</div>
+      </div>
+      <div class="recent-meta">${timeAgo}</div>
+    </div>`;
+  }).join('');
+}
+
+function getTimeAgo(ts) {
+  const diff = Date.now() - new Date(ts).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'Just now';
+  if (mins < 60) return mins + 'm ago';
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return hrs + 'h ago';
+  return Math.floor(hrs / 24) + 'd ago';
+}
+
+// ═══════════ MODE / STATS ═══════════
 function updateModeIndicator() {
   const el = document.getElementById('mode-indicator');
   const txt = document.getElementById('mode-text');
@@ -866,12 +1499,15 @@ function updateStats() {
   if (state.history.length > 0) {
     const avg = Math.round(state.history.reduce((s,h) => s + h.avgConfidence, 0) / state.history.length);
     document.getElementById('stat-accuracy').textContent = avg + '%';
-    const edited = state.history.reduce((s,h) => s + h.fieldsEdited, 0);
-    document.getElementById('stat-edited').textContent = edited;
   } else {
     document.getElementById('stat-accuracy').textContent = '—';
-    document.getElementById('stat-edited').textContent = '0';
   }
+  // Count active meds
+  let totalActive = 0;
+  Object.values(state.medications).forEach(meds => {
+    totalActive += meds.filter(m => m.status === 'active').length;
+  });
+  document.getElementById('stat-active-meds').textContent = totalActive;
 }
 
 // ═══════════ SETTINGS ═══════════
@@ -892,8 +1528,9 @@ function onApiKeyInput() {
 }
 
 function clearAllData() {
-  if (confirm('Clear all history and settings?')) {
+  if (confirm('Clear all history, medications, and settings?')) {
     state.history = [];
+    state.medications = {};
     state.apiKey = '';
     state.useRealAPI = false;
     localStorage.removeItem('careos_state');
@@ -901,8 +1538,8 @@ function clearAllData() {
     document.getElementById('api-status').classList.add('hidden');
     document.getElementById('toggle-api').classList.replace('on','off');
     document.getElementById('api-config').classList.add('hidden');
-    updateStats(); updateModeIndicator();
-    alert('All data cleared.');
+    updateStats(); updateModeIndicator(); updatePendingAlert();
+    showToast('All data cleared');
   }
 }
 
@@ -910,12 +1547,11 @@ function clearAllData() {
 function handleImage(e) {
   const file = e.target.files?.[0];
   if (!file) return;
-  
+
   state.processStartTime = Date.now();
   showScreen('processing');
   document.getElementById('processing-step').textContent = 'Preparing image...';
-  
-  // Compress image to stay under Claude's 5MB limit
+
   compressImage(file, 4.5 * 1024 * 1024).then(dataUrl => {
     state.currentImage = dataUrl;
     const preview = document.getElementById('processing-preview');
@@ -923,7 +1559,7 @@ function handleImage(e) {
     processOrder();
   }).catch(err => {
     alert('Error processing image: ' + err.message);
-    showScreen('home');
+    navigateTo('scan');
   });
 }
 
@@ -933,39 +1569,24 @@ function compressImage(file, maxBytes) {
     reader.onload = (ev) => {
       const img = new Image();
       img.onload = () => {
-        // Start with original size, scale down if needed
         let quality = 0.85;
-        let maxDim = 2400; // Max dimension in pixels
-        
+        let maxDim = 2400;
         function tryCompress() {
           const canvas = document.createElement('canvas');
           let w = img.width, h = img.height;
-          
-          // Scale down if larger than maxDim
           if (w > maxDim || h > maxDim) {
             if (w > h) { h = Math.round(h * maxDim / w); w = maxDim; }
             else { w = Math.round(w * maxDim / h); h = maxDim; }
           }
-          
-          canvas.width = w;
-          canvas.height = h;
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0, w, h);
-          
+          canvas.width = w; canvas.height = h;
+          canvas.getContext('2d').drawImage(img, 0, 0, w, h);
           const dataUrl = canvas.toDataURL('image/jpeg', quality);
-          
-          // Check size (base64 is ~33% larger than binary)
-          const base64 = dataUrl.split(',')[1];
-          const bytes = base64.length * 0.75;
-          
+          const bytes = dataUrl.split(',')[1].length * 0.75;
           if (bytes > maxBytes && quality > 0.3) {
-            // Try again with lower quality or smaller size
             quality -= 0.15;
             if (quality < 0.5) maxDim = Math.round(maxDim * 0.75);
             tryCompress();
-          } else {
-            resolve(dataUrl);
-          }
+          } else { resolve(dataUrl); }
         }
         tryCompress();
       };
@@ -983,15 +1604,14 @@ async function processOrder() {
 
   if (!state.useRealAPI || !state.apiKey) {
     alert('Please add your API key in Settings first.');
-    showScreen('home');
+    navigateTo('settings');
     return;
   }
 
-  // ─── REAL API ───
   try {
     stepEl.textContent = 'Connecting to Claude API...';
     await sleep(400);
-    
+
     stepEl.textContent = 'Sending image for analysis...';
     const base64 = state.currentImage.split(',')[1];
     const mediaType = state.currentImage.split(';')[0].split(':')[1] || 'image/jpeg';
@@ -1005,9 +1625,7 @@ async function processOrder() {
         'anthropic-dangerous-direct-browser-access': 'true',
       },
       body: JSON.stringify({
-        model: state.model,
-        max_tokens: 4096,
-        system: SYSTEM_PROMPT,
+        model: state.model, max_tokens: 4096, system: SYSTEM_PROMPT,
         messages: [{
           role: 'user',
           content: [
@@ -1019,7 +1637,6 @@ async function processOrder() {
     });
 
     stepEl.textContent = 'Reading AI response...';
-
     if (!response.ok) {
       const err = await response.json().catch(() => ({}));
       throw new Error(err.error?.message || 'API error: ' + response.status);
@@ -1027,14 +1644,13 @@ async function processOrder() {
 
     const data = await response.json();
     const text = data.content?.[0]?.text || '';
-
     stepEl.textContent = 'Parsing results...';
     await sleep(300);
 
     const jsonStr = text.replace(/```json\n?/g,'').replace(/```\n?/g,'').trim();
     let parsed = JSON.parse(jsonStr);
 
-    // ─── TWO-PASS VERIFICATION ───
+    // Two-pass verification for low confidence
     const lowConf = parsed.medications?.some(m => (m.confidence || 100) < 55);
     if (lowConf) {
       stepEl.textContent = 'Double-checking unclear fields...';
@@ -1048,13 +1664,12 @@ async function processOrder() {
             'anthropic-dangerous-direct-browser-access': 'true',
           },
           body: JSON.stringify({
-            model: state.model,
-            max_tokens: 2048,
+            model: state.model, max_tokens: 2048,
             messages: [{
               role: 'user',
               content: [
                 { type: 'image', source: { type: 'base64', media_type: mediaType, data: base64 } },
-                { type: 'text', text: 'First read returned: ' + JSON.stringify(parsed.medications) + '\n\nSome had low confidence. Look again carefully at the medication names and dosages. Return the same JSON structure with corrections. Only change what you are more sure about.' }
+                { type: 'text', text: 'First read returned: ' + JSON.stringify(parsed.medications) + '\n\nSome had low confidence. Look again carefully. Return the same JSON structure with corrections.' }
               ]
             }]
           })
@@ -1071,7 +1686,7 @@ async function processOrder() {
       } catch(e) {}
     }
 
-    // ─── ADAPT MULTI-MED RESPONSE TO FLAT FIELD LIST ───
+    // Build fields
     const meds = parsed.medications || [];
     const fields = [];
 
@@ -1099,6 +1714,7 @@ async function processOrder() {
       medCount: meds.length,
       patient: parsed.patient_name || '',
       fields: fields,
+      rawMeds: meds,
       isLive: true,
     };
 
@@ -1107,15 +1723,61 @@ async function processOrder() {
 
   } catch(err) {
     alert('API Error: ' + err.message);
-    showScreen('home');
+    navigateTo('scan');
   }
 }
 
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
+// ═══════════ DUPLICATE CHECK ═══════════
+function checkDuplicates(medName, residentName) {
+  const existingMeds = state.medications[residentName] || [];
+  const normalizedNew = medName.toLowerCase().replace(/[^a-z]/g, '');
+  const duplicates = [];
+  existingMeds.forEach(m => {
+    const normalizedExisting = m.name.toLowerCase().replace(/[^a-z]/g, '');
+    // Check for same drug name (fuzzy)
+    if (normalizedNew.includes(normalizedExisting.slice(0,5)) ||
+        normalizedExisting.includes(normalizedNew.slice(0,5)) ||
+        normalizedNew === normalizedExisting) {
+      duplicates.push(m);
+    }
+  });
+  return duplicates;
+}
+
+// ═══════════ ALLERGY CHECK ═══════════
+function checkAllergies(medName, residentName) {
+  const r = RESIDENTS_DATA[residentName];
+  if (!r || !r.allergies.length) return [];
+  const normalizedMed = medName.toLowerCase();
+  const matches = [];
+  // Common drug-allergy mappings
+  const allergyDrugMap = {
+    'penicillin': ['amoxicillin', 'ampicillin', 'penicillin', 'augmentin', 'piperacillin'],
+    'sulfa drugs': ['sulfamethoxazole', 'trimethoprim', 'bactrim', 'septra', 'sulfasalazine'],
+    'aspirin': ['aspirin', 'asa', 'acetylsalicylic'],
+    'ibuprofen': ['ibuprofen', 'advil', 'motrin', 'naproxen', 'nsaid'],
+    'codeine': ['codeine', 'tylenol #3', 'tylenol #4'],
+    'latex': [],
+  };
+
+  r.allergies.forEach(allergy => {
+    const relatedDrugs = allergyDrugMap[allergy.toLowerCase()] || [allergy.toLowerCase()];
+    relatedDrugs.forEach(drug => {
+      if (normalizedMed.includes(drug)) {
+        matches.push(allergy);
+      }
+    });
+  });
+  return [...new Set(matches)];
+}
+
 // ═══════════ RENDER RESULTS ═══════════
 function renderResults() {
   const r = state.currentResults;
+  const resident = RESIDENTS_DATA[state.selectedResident];
+
   document.getElementById('results-subtitle').textContent =
     'For ' + state.selectedResident + (r.patient ? ' · Patient: ' + r.patient : '') + ' · Live API';
 
@@ -1126,8 +1788,47 @@ function renderResults() {
   const bannerText = r.medCount > 1 ? r.medCount + ' Medications Found' : 'Extraction Complete';
   html += '<div class="result-banner success">' +
     '<span class="rb-icon">✓</span>' +
-    '<div><div class="rb-text">' + bannerText + '</div>' +
-    '<div class="rb-sub">' + r.summary + ' · Tap any field to edit</div></div></div>';
+    '<div><div class="rb-text" style="color:var(--success)">' + bannerText + '</div>' +
+    '<div class="rb-sub" style="color:var(--success)">' + r.summary + ' · Tap any field to edit</div></div></div>';
+
+  // Allergy check
+  if (resident && resident.allergies.length > 0) {
+    const allergyMatches = [];
+    (r.rawMeds || []).forEach(med => {
+      const matches = checkAllergies(med.name, state.selectedResident);
+      if (matches.length) allergyMatches.push({ med: med.name, allergies: matches });
+    });
+    if (allergyMatches.length > 0) {
+      html += `<div class="dup-warning" style="background:var(--danger-soft);border-color:rgba(192,57,43,0.25);">
+        <span class="dup-warning-icon">🚨</span>
+        <div class="dup-warning-text" style="color:var(--danger);">
+          <div class="dup-warning-title">ALLERGY ALERT</div>
+          ${allergyMatches.map(a => `<strong>${a.med}</strong> may conflict with known allergy: <strong>${a.allergies.join(', ')}</strong>`).join('<br>')}
+          <br>Verify with prescriber before confirming.
+        </div>
+      </div>`;
+    }
+  }
+
+  // Duplicate check
+  const dupWarnings = [];
+  (r.rawMeds || []).forEach(med => {
+    const dups = checkDuplicates(med.name, state.selectedResident);
+    if (dups.length > 0) {
+      dupWarnings.push({ newMed: med.name, existing: dups });
+    }
+  });
+  if (dupWarnings.length > 0) {
+    html += `<div class="dup-warning">
+      <span class="dup-warning-icon">⚠️</span>
+      <div class="dup-warning-text">
+        <div class="dup-warning-title">Possible Duplicate Detected</div>
+        ${dupWarnings.map(d =>
+          `${state.selectedResident} already has <strong>${d.existing[0].name}</strong> (${d.existing[0].status}). Is "<strong>${d.newMed}</strong>" a dosage change or duplicate?`
+        ).join('<br>')}
+      </div>
+    </div>`;
+  }
 
   // Image preview
   if (state.currentImage) {
@@ -1139,8 +1840,6 @@ function renderResults() {
   r.fields.forEach((f, i) => {
     const match = f.key.match(/_(\d+)$/);
     const medIdx = match ? parseInt(match[1]) : 0;
-
-    // Add divider between medications
     if (r.medCount > 1 && medIdx !== currentMedIdx && medIdx > 0 && f.key.startsWith('medication_')) {
       html += '<div class="med-divider">Medication ' + (medIdx + 1) + '</div>';
     }
@@ -1171,13 +1870,13 @@ function startEdit(idx) {
   const valueEl = el.querySelector('.result-field-value');
   const warnEl = el.querySelector('.low-conf-warning');
   if (warnEl) warnEl.style.display = 'none';
-  
+
   valueEl.innerHTML = `<div class="edit-row">
     <input class="edit-input" id="edit-input" value="${field.value.replace(/"/g,'&quot;')}" autofocus>
     <button class="edit-save" onclick="event.stopPropagation(); saveEdit(${idx})">Save</button>
     <button class="edit-cancel" onclick="event.stopPropagation(); cancelEdit()">✕</button>
   </div>`;
-  
+
   setTimeout(() => document.getElementById('edit-input')?.focus(), 50);
 }
 
@@ -1201,7 +1900,7 @@ function updateConfirmStats() {
   const fields = state.currentResults.fields;
   const avg = Math.round(fields.reduce((s,f) => s + f.confidence, 0) / fields.length);
   const edited = fields.filter(f => f.edited).length;
-  document.getElementById('confirm-stats').textContent = 
+  document.getElementById('confirm-stats').textContent =
     `Avg confidence: ${avg}% · ${edited} field${edited !== 1 ? 's' : ''} edited`;
 }
 
@@ -1209,14 +1908,34 @@ function updateConfirmStats() {
 function confirmOrder() {
   const r = state.currentResults;
   const elapsed = Math.round((Date.now() - state.processStartTime) / 1000);
-  
+
+  // Add medications to resident's med list
+  const residentName = state.selectedResident;
+  if (!state.medications[residentName]) state.medications[residentName] = [];
+
+  (r.rawMeds || []).forEach((med, idx) => {
+    // Get potentially edited values
+    const getName = r.fields.find(f => f.key === 'medication_' + idx)?.value || med.name;
+    const getDosage = r.fields.find(f => f.key === 'dosage_' + idx)?.value || med.dosage;
+    const getRoute = r.fields.find(f => f.key === 'route_' + idx)?.value || med.route;
+    const getFrequency = r.fields.find(f => f.key === 'frequency_' + idx)?.value || med.frequency;
+    const getForm = r.fields.find(f => f.key === 'form_' + idx)?.value || med.form;
+    const getPrescriber = r.fields.find(f => f.key === 'prescriber_' + idx)?.value || med.prescriber;
+
+    state.medications[residentName].push({
+      name: getName, dosage: getDosage, route: getRoute,
+      frequency: getFrequency, form: getForm, prescriber: getPrescriber,
+      status: 'pending', addedAt: new Date().toISOString(),
+    });
+  });
+
+  // History entry
   const entry = {
     timestamp: new Date().toISOString(),
     displayTime: new Date().toLocaleString(),
-    resident: state.selectedResident,
+    resident: residentName,
     medication: r.fields.filter(f => f.key.startsWith('medication_')).map(f => f.value).join(' + ') || 'Unknown',
     medCount: r.medCount || 1,
-    orderType: r.order_type,
     summary: r.summary,
     fieldsEdited: r.fields.filter(f => f.edited).length,
     totalFields: r.fields.length,
@@ -1225,7 +1944,7 @@ function confirmOrder() {
     processingTime: elapsed,
     allFields: r.fields.map(f => ({ key: f.key, value: f.value, confidence: f.confidence, edited: f.edited })),
   };
-  
+
   state.history.unshift(entry);
   saveState();
 
@@ -1250,7 +1969,9 @@ function renderHistory() {
     return;
   }
 
-  container.innerHTML = state.history.map((h, i) => {
+  let html = `<div class="export-btn" onclick="exportHistory()">📊 Export History as CSV</div>`;
+
+  html += state.history.map((h, i) => {
     const accColor = h.avgConfidence >= 90 ? 'var(--success)' : h.avgConfidence >= 75 ? 'var(--warning)' : 'var(--danger)';
     return `<div class="history-card">
       <div class="hc-top">
@@ -1273,6 +1994,23 @@ function renderHistory() {
       </div>
     </div>`;
   }).join('');
+
+  container.innerHTML = html;
+}
+
+// ═══════════ EXPORT ═══════════
+function exportHistory() {
+  if (state.history.length === 0) return;
+  let csv = 'Timestamp,Resident,Medication,Meds Count,Avg Confidence,Fields Edited,Total Fields,Processing Time (s),Mode\n';
+  state.history.forEach(h => {
+    csv += `"${h.displayTime}","${h.resident}","${h.medication}",${h.medCount},${h.avgConfidence}%,${h.fieldsEdited},${h.totalFields},${h.processingTime},${h.isLive ? 'Live' : 'Demo'}\n`;
+  });
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'careos_history_' + new Date().toISOString().split('T')[0] + '.csv';
+  a.click(); URL.revokeObjectURL(url);
+  showToast('CSV downloaded');
 }
 
 // ═══════════ START ═══════════
