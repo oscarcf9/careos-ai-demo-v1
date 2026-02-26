@@ -1,22 +1,25 @@
 {
-  "name": "CareOS AI Demo",
-  "short_name": "CareOS AI",
-  "description": "AI Doctor Order Reading - Proof of Concept",
-  "start_url": "/index.html",
+  "name": "CareOS AI",
+  "short_name": "CareOS",
+  "description": "AI-Powered eMAR for Assisted Living — Photograph doctor orders, AI extracts, you confirm.",
+  "start_url": "/careos-ai-demo-v1/",
+  "scope": "/careos-ai-demo-v1/",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#0B1A2B",
   "theme_color": "#0B1A2B",
-  "orientation": "portrait",
   "icons": [
     {
       "src": "icon-192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
       "src": "icon-512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }
